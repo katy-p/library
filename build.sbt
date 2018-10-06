@@ -10,7 +10,7 @@ libraryDependencies += "org.projectlombok" % "lombok" % "1.18.2" % Provided
 
 val junitVersion = "5.3.1"
 
-testOptions += Tests.Argument(jupiterTestFramework, "-q", "-v")
+testOptions += Tests.Argument(jupiterTestFramework, "-v")
 
 libraryDependencies ++= Seq(
   "org.junit.jupiter" % "junit-jupiter-api" % junitVersion % Test,

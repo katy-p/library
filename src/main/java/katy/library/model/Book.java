@@ -10,5 +10,5 @@ import lombok.experimental.Wither;
 public class Book {
     long id;
     String title;
-    String author;
+    Author author;
 }
