@@ -9,9 +9,7 @@ import java.time.Month;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * @author Simon Popugaev
- */
+
 class BookMapDaoTest {
 
     private Author author1 = Author.builder()
@@ -23,9 +21,9 @@ class BookMapDaoTest {
 
     private Author author2 = Author.builder()
             .id(-2)
-            .firstName("John")
-            .lastName("Gray")
-            .dateOfBirth(LocalDate.of(1983, Month.MAY, 14))
+            .firstName("Jane")
+            .lastName("Austen")
+            .dateOfBirth(LocalDate.of(1775, Month.DECEMBER, 16))
             .build();
 
     @Test
