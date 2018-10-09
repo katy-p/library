@@ -13,14 +13,13 @@ public class AuthorDaoImpl implements AuthorDao {
 
     @Override
     public Optional<Author> getById(long id) {
-        if (id == 1) {
-            return Optional.of(
-                    Author.builder()
-                            .id(1)
-                            .firstName("Terry")
-                            .lastName("Pratchett")
-                            .dateOfBirth(LocalDate.of(1948, Month.APRIL, 28))
-                            .build());
+        if (id ==1) {
+            return Optional.of(Author.builder()
+                .id(1)
+                .firstName("Terry")
+                .lastName("Pratchett")
+                .dateOfBirth(LocalDate.of(1948, Month.APRIL, 28))
+                .build());
         } else {
             return Optional.empty();
         }
