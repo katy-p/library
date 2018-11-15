@@ -15,5 +15,11 @@ testOptions += Tests.Argument(jupiterTestFramework, "-v")
 libraryDependencies ++= Seq(
   "org.junit.jupiter" % "junit-jupiter-api" % junitVersion % Test,
 	"org.junit.jupiter" % "junit-jupiter-params" % junitVersion % Test,
-	"org.junit.jupiter" % "junit-jupiter-engine" % junitVersion % Test
+	"org.junit.jupiter" % "junit-jupiter-engine" % junitVersion % Test,
+	"org.mockito" % "mockito-core" % "2.7.22" % Test
+)
+
+libraryDependencies ++= Seq(
+  "org.slf4j" % "slf4j-api" % "1.7.25",
+  "ch.qos.logback" % "logback-classic" % "1.2.3"
 )

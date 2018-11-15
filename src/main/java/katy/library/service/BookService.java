@@ -1,5 +1,7 @@
 package katy.library.service;
 
+import katy.library.dao.BookDao;
+import katy.library.dao.LibraryCardDao;
 import katy.library.dao.map.BookMapDao;
 import katy.library.dao.map.LibraryCardMapDao;
 import katy.library.exception.ResourceNotFoundException;
@@ -7,7 +9,6 @@ import katy.library.exception.ValidationException;
 import katy.library.model.Author;
 import katy.library.model.Book;
 import katy.library.model.LibraryCard;
-import katy.library.model.Person;
 
 import java.util.List;
 import java.util.Objects;
@@ -15,10 +16,14 @@ import java.util.Optional;
 
 public class BookService {
 
-    private BookMapDao dao = new BookMapDao();
+    private final BookDao dao;
 
-    private LibraryCardMapDao libraryCardDAO = new LibraryCardMapDao();
+    private final LibraryCardDao libraryCardDAO;
 
+    public BookService(BookDao dao, LibraryCardDao libraryCardDAO) {
+        this.dao = dao;
+        this.libraryCardDAO = libraryCardDAO;
+    }
 
     private void validateNotNull(Object value, String fieldName) {
         if (value == null) {
@@ -26,66 +31,61 @@ public class BookService {
         }
     }
 
-    public Book getByIdBook(long id){
+    public Book getByIdBook(long id) {
         Optional<Book> optionalBook = dao.getById(id);
 
         return optionalBook.orElseThrow(() -> new ResourceNotFoundException("Can't find book with id " + id));
     }
 
-    public  Book createBook(Book book){
+    public Book createBook(Book book) {
         validateNotNull(book.getTitle(), "title");
         validateNotNull(book.getAuthor(), "author");
 
         return dao.create(book);
     }
 
-   public  Book updateBook(Book book){
+    public Book updateBook(Book book) {
 
         validateNotNull(book.getTitle(), "title");
         validateNotNull(book.getAuthor(), "author");
 
         return dao.update(book);
+
     }
 
-    public Book deleteBook(long id){
+    public Book deleteBook(long id) {
 
         Optional<Book> optionalBook = dao.delete(id);
 
-        return optionalBook.orElseThrow(()-> new ResourceNotFoundException("Can't find book with id " + id));
+        return optionalBook.orElseThrow(() -> new ResourceNotFoundException("Can't find book with id " + id));
     }
 
-    public List<Book> findByNameBook(String title){
+    public List<Book> findByNameBook(String title) {
 
         Objects.requireNonNull(title, "Title required.");
 
         return dao.findByTitle(title);
     }
 
-    public List<Book> findByAuthorBook(Author author){
+    public List<Book> findByAuthorBook(Author author) {
 
-        Objects.requireNonNull(author, "Author required.");
+        validateNotNull(author, "author");
 
         return dao.findByAuthor(author);
     }
 
-    public LibraryCard borrowBook(Book book, Person person){
+    public LibraryCard borrowBook(LibraryCard libraryCard) {
 
-        Objects.requireNonNull(book, "Book required.");
-        Objects.requireNonNull(person, "Person required.");
-
-        LibraryCard libraryCard = LibraryCard.builder()
-                .id(1)
-                .book(book)
-                .person(person)
-                .build();
+        validateNotNull(libraryCard.getBook(), "book");
+        validateNotNull(libraryCard.getPerson(), "person");
 
         return libraryCardDAO.create(libraryCard);
     }
 
-    public Optional<LibraryCard> returnBook(long id){
+    public LibraryCard returnBook(long id) {
 
-        Objects.requireNonNull(id, "Id required.");
+        Optional<LibraryCard> optionalLC = libraryCardDAO.delete(id);
 
-        return libraryCardDAO.delete(id);
+        return optionalLC.orElseThrow(() -> new ResourceNotFoundException("Can't find book with id " + id));
     }
 }

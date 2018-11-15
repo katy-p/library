@@ -1,65 +1,61 @@
 package katy.library.service;
 
+import katy.library.dao.PersonDao;
 import katy.library.dao.map.PersonMapDao;
+import katy.library.exception.ResourceNotFoundException;
+import katy.library.exception.ValidationException;
 import katy.library.model.Person;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 public class PersonServise {
 
-    private PersonMapDao dao = new PersonMapDao();
+    private PersonDao dao;
 
-
-    public Optional<Person> getByIdPerson(long id){
-
-        Objects.requireNonNull(id, "Id required.");
-
-        return dao.getById(id);
+    public PersonServise(PersonDao dao) {
+        this.dao = dao;
     }
 
-    public  Person createPerson(String firstName, String lastName, LocalDate dateOfBirth){
 
-        Objects.requireNonNull(firstName, "Firstname required.");
-        Objects.requireNonNull(lastName, "Lastname required.");
-        Objects.requireNonNull(lastName, "Lastname required.");
-
-
-        Person person = Person.builder()
-                .id(1)
-                .firstName(firstName)
-                .lastName(lastName)
-                .dateOfBirth(dateOfBirth)
-                .build();
-
-        return dao.create(person);
+    private void validateNotNull(Object value, String fieldName) {
+        if (value == null) {
+            throw new ValidationException("Field should not be null", fieldName);
+        }
     }
 
-    public  Person updatePerson(long id, String firstName, String lastName, LocalDate dateOfBirth){
 
-        Objects.requireNonNull(id, "Id required.");
-        Objects.requireNonNull(firstName, "Firstname required.");
-        Objects.requireNonNull(lastName, "Lastname required.");
-        Objects.requireNonNull(lastName, "Lastname required.");
+    public Person getByIdPerson(long id){
 
+        Optional<Person> optionalPerson = dao.getById(id);
 
-        Person person = Person.builder()
-                .id(id)
-                .firstName(firstName)
-                .lastName(lastName)
-                .dateOfBirth(dateOfBirth)
-                .build();
+        return optionalPerson.orElseThrow(() -> new ResourceNotFoundException("Can't find person with id " + id));
+    }
+
+    public  Person createPerson(Person person){
+
+        validateNotNull(person.getLastName(), "lastname");
+        validateNotNull(person.getFirstName(), "firstname");
+        validateNotNull(person.getDateOfBirth(), "dateofbirth");
+
+       return dao.create(person);
+    }
+
+    public  Person updatePerson(Person person){
+
+        validateNotNull(person.getLastName(), "lastname");
+        validateNotNull(person.getFirstName(), "firstname");
+        validateNotNull(person.getDateOfBirth(), "dateofbirth");
 
         return dao.update(person);
     }
 
-    public Optional<Person> deletePerson(long id){
+    public Person deletePerson(long id){
 
-        Objects.requireNonNull(id, "Id required.");
+        Optional<Person> optionalPerson = dao.delete(id);
 
-        return dao.delete(id);
+        return optionalPerson.orElseThrow(()-> new ResourceNotFoundException("Can't find person with id " + id));
     }
 
     public List<Person> findByNamePerson(String lastName){

@@ -1,65 +1,59 @@
 package katy.library.service;
 
+import katy.library.dao.AuthorDao;
 import katy.library.dao.map.AuthorMapDao;
+import katy.library.exception.ResourceNotFoundException;
+import katy.library.exception.ValidationException;
 import katy.library.model.Author;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 public class AuthorService {
 
-    private AuthorMapDao dao = new AuthorMapDao();
+    private AuthorDao dao;
 
-
-    public Optional<Author> getByIdAuthor(long id){
-
-        Objects.requireNonNull(id, "Id required.");
-
-        return dao.getById(id);
+    public AuthorService(AuthorDao dao) {
+        this.dao = dao;
     }
 
-    public  Author createAuthor(String firstName, String lastName, LocalDate dateOfBirth){
+    private void validateNotNull(Object value, String fieldName) {
+        if (value == null) {
+            throw new ValidationException("Field should not be null", fieldName);
+        }
+    }
 
-        Objects.requireNonNull(firstName, "Firstname required.");
-        Objects.requireNonNull(lastName, "Lastname required.");
-        Objects.requireNonNull(lastName, "Lastname required.");
+    public Author getByIdAuthor(long id){
 
+        Optional<Author> optionalauthor = dao.getById(id);
 
-        Author author = Author.builder()
-                .id(1)
-                .firstName(firstName)
-                .lastName(lastName)
-                .dateOfBirth(dateOfBirth)
-                .build();
+        return optionalauthor.orElseThrow(()-> new ResourceNotFoundException("Can't find author with id " + id));
+    }
+
+    public  Author createAuthor(Author author){
+
+        validateNotNull(author.getFirstName(), "firstname");
+        validateNotNull(author.getLastName(),  "lastname");
+        validateNotNull(author.getDateOfBirth(), "dateofbirth");
 
         return dao.create(author);
     }
 
-    public  Author updateAuthor(long id, String firstName, String lastName, LocalDate dateOfBirth){
+    public  Author updateAuthor(Author author){
 
-        Objects.requireNonNull(id, "Id required.");
-        Objects.requireNonNull(firstName, "Firstname required.");
-        Objects.requireNonNull(lastName, "Lastname required.");
-        Objects.requireNonNull(lastName, "Lastname required.");
-
-
-        Author author = Author.builder()
-                .id(id)
-                .firstName(firstName)
-                .lastName(lastName)
-                .dateOfBirth(dateOfBirth)
-                .build();
+        validateNotNull(author.getFirstName(), "firstname");
+        validateNotNull(author.getLastName(),  "lastname");
+        validateNotNull(author.getDateOfBirth(), "dateofbirth");
 
         return dao.update(author);
     }
 
-    public Optional<Author> deleteAuthor(long id){
+    public Author deleteAuthor(long id){
 
-        Objects.requireNonNull(id, "Id required.");
+        Optional<Author> optionalauthor = dao.getById(id);
 
-        return dao.delete(id);
+        return optionalauthor.orElseThrow(()-> new ResourceNotFoundException("Can't find author with id " + id));
     }
 
     public List<Author> findByNameAuthor(String lastName){
