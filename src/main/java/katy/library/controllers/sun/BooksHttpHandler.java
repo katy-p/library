@@ -34,48 +34,33 @@ public class BooksHttpHandler extends AbstractHttpHandler {
     @Override
     protected String onDelete(URI requestURI) {
 
-        throw new RuntimeException("Unsupported method: DELETE");
+        String[] params = requestURI.getPath().split("/");
+        long id = Long.parseLong(params[params.length-1]);
+
+        final StringJoiner returnString = new StringJoiner("\n");
+        returnString.add("deleted book:");
+
+        returnString.add(bookService.deleteBook(id).toString());
+
+        return returnString.toString();
     }
 
     @Override
     protected String onGet(URI requestURI) {
 
-       /* final Map<String, String> params = Arrays.stream(
-                Optional.ofNullable(exchange.getRequestURI().getQuery()).orElse("")
-                        .split("&"))
-                .filter(Objects::nonNull)
-                .map(p->p.split("="))
-                .filter(a->a.length==2)
-                .collect(Collectors.toMap(a->a[0], b->b[1]));*/
-
         String[] params = requestURI.getPath().split("/");
 
-        for (int i = 2; i < params.length; i++) {
-            String[] split = params[i].split("=");
+        long id = Long.parseLong(params[params.length-1]);
 
-        }
-
-
-        String title = "";
-        long id = 0;
-        for (String key : params.keySet()) {
-            if ("title".equals(key))  {
-                title = params.get(key);
-            }
-            if ("id".equals(key))  {
-                id = Long.parseLong(params.get(key));
-            }
-        }
-
-        List<Book> bookList = bookService.findByNameBook(title);
+        //List<Book> bookList = bookService.findByNameBook(title);
 
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("book list:");
 
-        for (Book book : bookList) {
-            returnString.add(book.toString());
-        }
-        //bookList.add(Optional.ofNullable(bookService.getByIdBook(id)).orElse());
+        //for (Book book : bookList) {
+        //    returnString.add(book.toString());
+        //}
+        returnString.add(bookService.getByIdBook(id).toString());
 
         return returnString.toString();
     }

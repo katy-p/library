@@ -48,5 +48,6 @@ public class PersonHttpHandler extends AbstractHttpHandler{
             returnString.add(person.toString());
         }
 
-        return returnString.toString();}
+        return returnString.toString();
+    }
 }
