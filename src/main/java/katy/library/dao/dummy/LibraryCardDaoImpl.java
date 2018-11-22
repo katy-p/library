@@ -28,14 +28,14 @@ public class LibraryCardDaoImpl implements LibraryCardDao {
             .build();
 
     private Person person1 = Person.builder()
-            .id(-1)
+            .id(1)
             .firstName("Anna")
             .lastName("Smith")
             .dateOfBirth(LocalDate.of(1980, Month.APRIL, 28))
             .build();
 
     private LibraryCard libraryCard = LibraryCard.builder()
-            .id(-1)
+            .id(1)
             .person(person1)
             .book(book1)
             .build();
@@ -54,17 +54,24 @@ public class LibraryCardDaoImpl implements LibraryCardDao {
 
     @Override
     public LibraryCard create(LibraryCard entry) {
-        return null;
+
+        return entry;
     }
 
     @Override
     public LibraryCard update(LibraryCard entry) {
-        return null;
+
+        return entry;
     }
 
     @Override
     public Optional<LibraryCard> delete(long id) {
-        return Optional.empty();
+
+        if (id == 1) {
+            return Optional.of(libraryCard);
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override

@@ -32,17 +32,32 @@ public class AuthorDaoImpl implements AuthorDao {
 
     @Override
     public Author create(Author entry) {
-        return null;
+
+        if (author1.equals(entry)) {
+            return author1;
+        } else {
+            return entry;
+        }
     }
 
     @Override
     public Author update(Author entry) {
-        return null;
+
+        if (author1.equals(entry)) {
+            return author1;
+        } else {
+            return entry;
+        }
     }
 
     @Override
     public Optional<Author> delete(long id) {
-        return Optional.empty();
+
+        if (id ==1) {
+            return Optional.of(author1);
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override

@@ -12,7 +12,7 @@ import java.util.Optional;
 public class PersonDaoImpl implements PersonDao {
 
     private Person person1 = Person.builder()
-            .id(-1)
+            .id(1)
             .firstName("Anna")
             .lastName("Smith")
             .dateOfBirth(LocalDate.of(1980, Month.APRIL, 28))
@@ -30,17 +30,32 @@ public class PersonDaoImpl implements PersonDao {
 
     @Override
     public Person create(Person entry) {
-        return null;
+
+        if (person1.equals(entry)) {
+            return person1;
+        } else {
+            return entry;
+        }
     }
 
     @Override
     public Person update(Person entry) {
-        return null;
+
+        if (person1.equals(entry)) {
+            return person1;
+        } else {
+            return entry;
+        }
     }
 
     @Override
     public Optional<Person> delete(long id) {
-        return Optional.empty();
+
+        if (id == 1) {
+            return Optional.of(person1);
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override

@@ -36,17 +36,32 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public Book create(Book entry) {
-        return null;
+
+        if (book1.equals(entry)) {
+            return book1;
+        } else {
+            return entry;
+        }
     }
 
     @Override
     public Book update(Book entry) {
-        return null;
+
+        if (book1.equals(entry)) {
+            return book1;
+        } else {
+            return entry;
+        }
     }
 
     @Override
     public Optional<Book> delete(long id) {
-        return Optional.empty();
+
+        if (id == 1) {
+            return Optional.of(book1);
+        } else {
+            return Optional.empty();
+        }
     }
 
 

@@ -1,16 +1,14 @@
 package katy.library.controllers.sun;
 
-import katy.library.model.Book;
 import katy.library.service.BookService;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.List;
 import java.util.StringJoiner;
 
 public class BooksHttpHandler extends AbstractHttpHandler {
 
-    private  final BookService bookService;
+    private final BookService bookService;
 
     public BooksHttpHandler(BookService bookService) {
         this.bookService = bookService;
@@ -35,12 +33,14 @@ public class BooksHttpHandler extends AbstractHttpHandler {
     protected String onDelete(URI requestURI) {
 
         String[] params = requestURI.getPath().split("/");
-        long id = Long.parseLong(params[params.length-1]);
 
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("deleted book:");
 
-        returnString.add(bookService.deleteBook(id).toString());
+        if (params.length == 3) {
+            long id = Long.parseLong(params[params.length - 1]);
+            returnString.add(bookService.getByIdBook(id).toString());
+        }
 
         return returnString.toString();
     }
@@ -50,8 +50,6 @@ public class BooksHttpHandler extends AbstractHttpHandler {
 
         String[] params = requestURI.getPath().split("/");
 
-        long id = Long.parseLong(params[params.length-1]);
-
         //List<Book> bookList = bookService.findByNameBook(title);
 
         final StringJoiner returnString = new StringJoiner("\n");
@@ -60,7 +58,11 @@ public class BooksHttpHandler extends AbstractHttpHandler {
         //for (Book book : bookList) {
         //    returnString.add(book.toString());
         //}
-        returnString.add(bookService.getByIdBook(id).toString());
+
+        if (params.length == 3) {
+            long id = Long.parseLong(params[params.length - 1]);
+            returnString.add(bookService.getByIdBook(id).toString());
+        }
 
         return returnString.toString();
     }
