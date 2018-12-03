@@ -16,7 +16,9 @@ libraryDependencies ++= Seq(
   "org.junit.jupiter" % "junit-jupiter-api" % junitVersion % Test,
 	"org.junit.jupiter" % "junit-jupiter-params" % junitVersion % Test,
 	"org.junit.jupiter" % "junit-jupiter-engine" % junitVersion % Test,
-	"org.mockito" % "mockito-core" % "2.7.22" % Test
+	"org.mockito" % "mockito-core" % "2.7.22" % Test,
+  "org.apache.httpcomponents" % "httpclient" % "4.5.6" % Test,
+  "commons-io" % "commons-io" % "2.6" % Test
 )
 
 libraryDependencies ++= Seq(
