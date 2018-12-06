@@ -1,5 +1,6 @@
 package katy.library.controllers.sun;
 
+import katy.library.exception.ResourceNotFoundException;
 import katy.library.model.Author;
 import katy.library.model.Book;
 import katy.library.service.BookService;
@@ -9,10 +10,7 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.OptionalLong;
-import java.util.StringJoiner;
+import java.util.*;
 
 public class BooksHttpHandler extends AbstractHttpHandler {
 
@@ -29,32 +27,19 @@ public class BooksHttpHandler extends AbstractHttpHandler {
         return "/books/";
     }
 
-    private Book parseBook(String query){
+    private Book parseBook(URI requestURI){
 
-        Map<String, String> queryParams = new HashMap<>();
-
-        for (String q : query.split("&")) {
-            String[] qa = q.split("=");
-
-            queryParams.put(URLDecoder.decode(qa[0]), (qa.length == 2) ? URLDecoder.decode(qa[1]) : "");
-        }
-
-        final LocalDate dateOfBirth = LocalDate.parse(queryParams.get("dateOfBirth"), DateTimeFormatter.ISO_LOCAL_DATE);
+        Map<String, String> queryParams = getParameters(requestURI);
 
         return Book.builder()
                 .id(Long.parseLong(queryParams.get("id")))
                 .title(queryParams.get("title"))
-                .author(Author.builder().id(Long.parseLong(queryParams.get("authorId"))).build())
+                .author(Author
+                        .builder()
+                        .id(Long.parseLong(queryParams.get("authorId")))
+                        .build())
                 .build();
     }
-
-    private OptionalLong getBookId(String path){
-
-        String[] params = path.split("/");
-
-        return (params.length == 3) ? OptionalLong.of(Long.parseLong(params[params.length - 1])) : OptionalLong.empty();
-    }
-
 
     @Override
     protected String onPost(URI requestURI, InputStream requestBody) {
@@ -62,7 +47,7 @@ public class BooksHttpHandler extends AbstractHttpHandler {
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("created book:");
 
-        returnString.add(bookService.createBook(parseBook(requestURI.getQuery())).toString());
+        returnString.add(bookService.createBook(parseBook(requestURI)).toString());
 
         return returnString.toString();
     }
@@ -73,7 +58,7 @@ public class BooksHttpHandler extends AbstractHttpHandler {
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("updated book");
 
-        returnString.add(bookService.updateBook(parseBook(requestURI.getQuery())).toString());
+        returnString.add(bookService.updateBook(parseBook(requestURI)).toString());
 
         return returnString.toString();
     }
@@ -84,8 +69,8 @@ public class BooksHttpHandler extends AbstractHttpHandler {
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("deleted book:");
 
-        final long bookId = getBookId(requestURI.getPath()).orElseThrow(() -> new RuntimeException("Invalid path"));
-        returnString.add(bookService.deleteBook(bookId).toString());
+        final long id = getId(requestURI).orElseThrow(() -> new ResourceNotFoundException("Can't delete author without id."));
+        returnString.add(bookService.deleteBook(id).toString());
 
         return returnString.toString();
     }
@@ -96,8 +81,15 @@ public class BooksHttpHandler extends AbstractHttpHandler {
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("book list:");
 
-        final long bookId = getBookId(requestURI.getPath()).orElseThrow(() -> new RuntimeException("Invalid path"));
-        returnString.add(bookService.getByIdBook(bookId).toString());
+        final OptionalLong id = getId(requestURI);
+
+        if (id.isPresent()) {
+            returnString.add(bookService.getByIdBook(id.getAsLong()).toString());
+
+        } else {
+            final List<Book> bookList = bookService.fullListOfBooks();
+            bookList.forEach(book -> returnString.add(book.toString()));
+        }
 
         return returnString.toString();
     }

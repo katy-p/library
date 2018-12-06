@@ -1,29 +1,18 @@
-package katy.library.dao.sql;
+package katy.library.dao;
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgreSQL;
-import katy.library.dao.PersonDao;
-import katy.library.dao.map.PersonMapDao;
 import katy.library.model.Person;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.sql.DataSource;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 
-class PersonSqlDaoTest {
-
-    private static EmbeddedPostgreSQL embeddedPostgreSQL;
-    private static DataSource source;
+abstract public class PersonDaoTestTemplate {
 
     private Person person1 = Person.builder()
             .id(1)
@@ -39,33 +28,12 @@ class PersonSqlDaoTest {
             .dateOfBirth(LocalDate.of(1983, Month.MAY, 14))
             .build();
 
-    @BeforeAll
-    static void init() throws IOException, SQLException {
-
-        embeddedPostgreSQL = EmbeddedPostgreSQL.start();
-
-        source = embeddedPostgreSQL.getPostgresDatabase();
-
-        SqlDaoTestUtils.createTables(source);
-    }
-
-    @AfterAll
-    static void teardown() throws IOException {
-
-        embeddedPostgreSQL.close();
-    }
-
-    @BeforeEach
-    void cleanData() {
-
-        SqlDaoTestUtils.clearTables(source);
-    }
-
+    protected abstract PersonDao getPersonDao();
 
     @Test
     void getById() {
 
-        PersonDao dao = new PersonSqlDao(source);
+        PersonDao dao = getPersonDao();
 
         final Person created = dao.create(person1);
 
@@ -75,7 +43,7 @@ class PersonSqlDaoTest {
     @Test
     void testcreate() {
 
-        PersonDao dao = new PersonSqlDao(source);
+        PersonDao dao = getPersonDao();
 
         final Person created = dao.create(person1);
 
@@ -85,7 +53,7 @@ class PersonSqlDaoTest {
     @Test
     void testupdate() {
 
-        PersonDao dao = new PersonSqlDao(source);
+        PersonDao dao = getPersonDao();
 
         final Person created = dao.create(person1);
         assertEquals(created, person1);
@@ -100,7 +68,7 @@ class PersonSqlDaoTest {
     @Test
     void testdelete() {
 
-        PersonDao dao = new PersonSqlDao(source);
+        PersonDao dao = getPersonDao();
 
         final Person created = dao.create(person1);
 
@@ -112,7 +80,7 @@ class PersonSqlDaoTest {
     @Test
     void testfindByName() {
 
-        PersonDao dao = new PersonSqlDao(source);
+        PersonDao dao = getPersonDao();
 
         final Person created1 = dao.create(person1);
         final Person created2 = dao.create(person2);
@@ -125,7 +93,7 @@ class PersonSqlDaoTest {
     @Test
     void testfullList() {
 
-        PersonDao dao = new PersonSqlDao(source);
+        PersonDao dao = getPersonDao();
 
         final Person created1 = dao.create(person1);
         final Person created2 = dao.create(person2);

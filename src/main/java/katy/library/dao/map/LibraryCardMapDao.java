@@ -87,4 +87,16 @@ public class LibraryCardMapDao implements LibraryCardDao {
         return res;
 
     }
+
+    @Override
+    public List<LibraryCard> fullList() {
+
+        List <LibraryCard> res = new ArrayList<>();
+
+        for (LibraryCard libraryCard : libraryCardMap.values()) {
+            res.add(libraryCard);
+        }
+        return res;
+
+    }
 }

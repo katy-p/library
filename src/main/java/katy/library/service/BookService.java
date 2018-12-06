@@ -74,6 +74,11 @@ public class BookService {
         return dao.findByAuthor(author);
     }
 
+    public List<Book> fullListOfBooks(){
+
+        return dao.fullList();
+    }
+
     public LibraryCard borrowBook(LibraryCard libraryCard) {
 
         validateNotNull(libraryCard.getBook(), "book");

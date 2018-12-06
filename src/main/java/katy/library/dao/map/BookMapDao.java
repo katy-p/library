@@ -3,9 +3,7 @@ package katy.library.dao.map;
 import katy.library.dao.BookDao;
 import katy.library.model.Author;
 import katy.library.model.Book;
-import sun.swing.BakedArrayList;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 
@@ -94,6 +92,16 @@ public class BookMapDao implements BookDao {
                 res.add(book);
             }
 
+        }
+        return res;
+    }
+
+    @Override
+    public List<Book> fullList() {
+
+        List <Book> res = new ArrayList<>();
+        for (Book book : bookMap.values()) {
+            res.add(book);
         }
         return res;
     }

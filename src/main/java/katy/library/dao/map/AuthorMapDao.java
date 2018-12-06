@@ -74,4 +74,14 @@ public class AuthorMapDao implements AuthorDao {
         }
         return res;
     }
+
+    @Override
+    public List<Author> fullList() {
+
+        List <Author> res = new ArrayList<Author>();
+        for (Author author : authorMap.values()) {
+            res.add(author);
+        }
+        return res;
+    }
 }

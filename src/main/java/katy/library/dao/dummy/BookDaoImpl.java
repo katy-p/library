@@ -88,4 +88,13 @@ public class BookDaoImpl implements BookDao {
 
         return bookList;
     }
+
+    @Override
+    public List<Book> fullList() {
+
+        List<Book> bookList = new ArrayList<>();
+        bookList.add(book1);
+
+        return bookList;
+    }
 }

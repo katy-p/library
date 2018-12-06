@@ -64,4 +64,9 @@ public class PersonServise {
 
         return dao.findByName(lastName);
     }
+
+    public List<Person> fullListOfPersons(){
+
+        return dao.fullList();
+    }
 }

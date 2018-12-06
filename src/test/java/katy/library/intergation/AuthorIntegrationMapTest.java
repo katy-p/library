@@ -1,5 +1,7 @@
 package katy.library.intergation;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.sun.net.httpserver.HttpServer;
 import katy.library.controllers.sun.AuthorsHttpHandler;
 import katy.library.dao.AuthorDao;
@@ -14,15 +16,41 @@ import org.junit.jupiter.api.BeforeEach;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-class AuthorIntegrationTest extends AuthorIntegrationTestTemplate {
+import static com.fasterxml.jackson.databind.SerializationFeature.*;
+
+class AuthorIntegrationMapTest extends AuthorIntegrationTestTemplate {
 
     private static HttpServer httpServer;
     private static String address;
     private static CloseableHttpClient httpClient;
     private static AuthorDao authorDao;
+    private static ObjectMapper objectMapper;
+
+    @Override
+    public AuthorDao getAuthorDao() {
+        return authorDao;
+    }
+
+    @Override
+    public String getAddress() {
+        return address;
+    }
+
+    @Override
+    public CloseableHttpClient getHttpClient() {
+        return httpClient;
+    }
+
+    @Override
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
 
     @BeforeAll
     static void init() throws IOException {
+
+        //objectMapper = ObjectMapperUtil.;
 
         httpClient = HttpClientBuilder.create().build();
         httpServer = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
@@ -42,21 +70,6 @@ class AuthorIntegrationTest extends AuthorIntegrationTestTemplate {
     static void teardown() throws IOException {
         httpClient.close();
         httpServer.stop(0);
-    }
-
-    @Override
-    public AuthorDao getAuthorDao() {
-        return authorDao;
-    }
-
-    @Override
-    public String getAddress() {
-        return address;
-    }
-
-    @Override
-    public CloseableHttpClient getHttpClient() {
-        return httpClient;
     }
 
     @BeforeEach

@@ -1,6 +1,9 @@
-package katy.library.dao.sql;
+package katy.library.dao;
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgreSQL;
+import katy.library.dao.sql.AuthorSqlDao;
+import katy.library.dao.sql.BookSqlDao;
+import katy.library.dao.sql.SqlDaoTestUtils;
 import katy.library.model.Author;
 import katy.library.model.Book;
 import org.junit.jupiter.api.AfterAll;
@@ -19,10 +22,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-class BookSqlDaoTest {
-
-    private static EmbeddedPostgreSQL embeddedPostgreSQL;
-    private static DataSource source;
+abstract public class BookDaoTestTemplate {
 
     private Author author1 = Author.builder()
             .id(1)
@@ -50,48 +50,31 @@ class BookSqlDaoTest {
             .author(author2)
             .build();
 
+    protected abstract BookDao getBookDao();
 
-    @BeforeAll
-    static void init() throws SQLException, IOException {
-
-        embeddedPostgreSQL = EmbeddedPostgreSQL.start();
-
-        source = embeddedPostgreSQL.getPostgresDatabase();
-
-        SqlDaoTestUtils.createTables(source);
-    }
-
-    @AfterAll
-    static void teardown() throws IOException {
-
-        embeddedPostgreSQL.close();
-    }
-
-    @BeforeEach
-    void cleanData() {
-        SqlDaoTestUtils.clearTables(source);
-    }
-
+    protected abstract AuthorDao getAuthorDao();
 
     @Test
     void testgetById() {
 
-        BookSqlDao dao = new BookSqlDao(source);
+        BookDao dao = getBookDao();
+        AuthorDao authorDao = getAuthorDao();
 
+        final Author author = authorDao.create(book1.getAuthor());
         final Book created = dao.create(book1);
 
         assertEquals(Optional.of(created), dao.getById(created.getId()));
+        assertEquals(author, created.getAuthor());
     }
 
     @Test
     void testcreate() {
 
-        BookSqlDao dao = new BookSqlDao(source);
-        AuthorSqlDao authorDao = new AuthorSqlDao(source);
+        BookDao dao = getBookDao();
+        AuthorDao authorDao = getAuthorDao();
 
         final Author author = authorDao.create(book1.getAuthor());
-
-        final Book created = dao.create(book1);
+        final Book created = dao.create(book1.withAuthor(author));
 
         assertEquals(book1.withId(created.getId()), created);
         assertEquals(author, created.getAuthor());
@@ -100,8 +83,8 @@ class BookSqlDaoTest {
     @Test
     void testupdate() {
 
-        BookSqlDao dao = new BookSqlDao(source);
-        AuthorSqlDao authorDao = new AuthorSqlDao(source);
+        BookDao dao = getBookDao();
+        AuthorDao authorDao = getAuthorDao();
 
         final Author author1 = authorDao.create(book1.getAuthor());
         final Author author2 = authorDao.create(book2.getAuthor());
@@ -123,7 +106,10 @@ class BookSqlDaoTest {
     @Test
     void testdelete() {
 
-        BookSqlDao dao = new BookSqlDao(source);
+        BookDao dao = getBookDao();
+        AuthorDao authorDao = getAuthorDao();
+
+        final Author author = authorDao.create(book1.getAuthor());
 
         final Book created = dao.create(book1);
 
@@ -135,7 +121,7 @@ class BookSqlDaoTest {
     @Test
     void testfindByAuthor() {
 
-        BookSqlDao dao = new BookSqlDao(source);
+        BookDao dao = getBookDao();
 
         final Book created1 = dao.create(book1);
 
@@ -149,7 +135,7 @@ class BookSqlDaoTest {
     @Test
     void testfindByTitle() {
 
-        BookSqlDao dao = new BookSqlDao(source);
+        BookDao dao = getBookDao();
 
         final Book created1 = dao.create(book1);
 
@@ -162,7 +148,8 @@ class BookSqlDaoTest {
 
     @Test
     void testfullList() {
-        BookSqlDao dao = new BookSqlDao(source);
+
+        BookDao dao = getBookDao();
 
         final Book created1 = dao.create(book1);
         final Book created2 = dao.create(book2);

@@ -72,4 +72,14 @@ public class PersonMapDao implements PersonDao {
         }
         return res;
     }
+
+    @Override
+    public List<Person> fullList() {
+
+        List<Person> res = new ArrayList<>();
+        for (Person person : personMap.values()) {
+            res.add(person);
+        }
+        return res;
+    }
 }

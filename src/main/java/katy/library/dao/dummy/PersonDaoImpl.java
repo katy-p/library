@@ -69,4 +69,14 @@ public class PersonDaoImpl implements PersonDao {
 
         return personList;
     }
+
+    @Override
+    public List<Person> fullList() {
+
+        List<Person> personList = new ArrayList<>();
+
+        personList.add(person1);
+
+        return personList;
+    }
 }

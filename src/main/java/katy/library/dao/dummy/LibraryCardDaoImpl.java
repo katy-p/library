@@ -6,6 +6,11 @@ import katy.library.model.Book;
 import katy.library.model.LibraryCard;
 import katy.library.model.Person;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
@@ -41,7 +46,6 @@ public class LibraryCardDaoImpl implements LibraryCardDao {
             .build();
 
 
-
     @Override
     public Optional<LibraryCard> getById(long id) {
 
@@ -55,13 +59,21 @@ public class LibraryCardDaoImpl implements LibraryCardDao {
     @Override
     public LibraryCard create(LibraryCard entry) {
 
-        return entry;
+        if (libraryCard.equals(entry)) {
+            return libraryCard;
+        } else {
+            return entry;
+        }
     }
 
     @Override
     public LibraryCard update(LibraryCard entry) {
 
-        return entry;
+        if (libraryCard.equals(entry)) {
+            return libraryCard;
+        } else {
+            return entry;
+        }
     }
 
     @Override
@@ -94,6 +106,16 @@ public class LibraryCardDaoImpl implements LibraryCardDao {
         if (book1.equals(book)) {
             lbList.add(libraryCard);
         }
+
+        return lbList;
+    }
+
+    @Override
+    public List<LibraryCard> fullList() {
+
+        List<LibraryCard> lbList = new ArrayList<>();
+
+        lbList.add(libraryCard);
 
         return lbList;
     }

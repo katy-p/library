@@ -11,4 +11,6 @@ public interface LibraryCardDao extends CrudDAO<LibraryCard>{
     List<LibraryCard> findByPerson(Person person);
 
     List<LibraryCard> findByBook(Book book);
+
+    List<LibraryCard> fullList();
 }

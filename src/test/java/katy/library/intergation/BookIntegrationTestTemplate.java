@@ -2,12 +2,8 @@ package katy.library.intergation;
 
 import com.sun.net.httpserver.HttpServer;
 import katy.library.controllers.sun.BooksHttpHandler;
-import katy.library.controllers.sun.PersonHttpHandler;
 import katy.library.dao.BookDao;
 import katy.library.dao.LibraryCardDao;
-import katy.library.dao.dummy.BookDaoImpl;
-import katy.library.dao.dummy.LibraryCardDaoImpl;
-import katy.library.dao.dummy.PersonDaoImpl;
 import katy.library.dao.map.BookMapDao;
 import katy.library.dao.map.LibraryCardMapDao;
 import katy.library.model.Author;
@@ -15,7 +11,6 @@ import katy.library.model.Book;
 import katy.library.model.LibraryCard;
 import katy.library.model.Person;
 import katy.library.service.BookService;
-import katy.library.service.PersonServise;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -34,15 +29,8 @@ import java.time.Month;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class BookIntegrationTest {
-
-    private static HttpServer httpServer;
-    private static String address;
-    private static CloseableHttpClient httpClient;
-    private static BookDao bookDao;
-    private static LibraryCardDao libraryCardDao;
+abstract class BookIntegrationTestTemplate {
 
     private Author author1 = Author.builder()
             .id(1)
@@ -70,42 +58,19 @@ public class BookIntegrationTest {
             .book(book1)
             .build();
 
+    protected abstract CloseableHttpClient getHttpServer();
 
-    @BeforeAll
-    public static void init() throws IOException {
+    protected abstract String getAddress();
 
-        httpClient = HttpClientBuilder.create().build();
-        httpServer = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+    public abstract BookDao setBookDao();
 
-        bookDao = new BookMapDao();
-        libraryCardDao = new LibraryCardMapDao();
+    public abstract LibraryCardDao getLibraryCardDao();
 
-        final BooksHttpHandler handler = new BooksHttpHandler(new BookService(bookDao, libraryCardDao));
-
-        httpServer.createContext(handler.path(), handler);
-
-        httpServer.start();
-
-        address = "http:/" + httpServer.getAddress();
-    }
-
-    @AfterAll
-    public static void teardown() throws IOException {
-        httpClient.close();
-        httpServer.stop(0);
-    }
-
-    @BeforeEach
-    void cleanData() {
-
-        bookDao.fullList().forEach(b -> bookDao.delete(b.getId()));
-        libraryCardDao.fullList().forEach(lc -> libraryCardDao.delete(lc.getId()));
-    }
 
     @Test
     void checkEmptyResponse() throws IOException {
 
-        try (final CloseableHttpResponse response = httpClient.execute(new HttpGet(address + "/books/"))) {
+        try (final CloseableHttpResponse response = getHttpServer().execute(new HttpGet(getAddress() + "/books/"))) {
 
             assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
 
@@ -118,9 +83,9 @@ public class BookIntegrationTest {
     @Test
     public void checkGet() throws IOException {
 
-        final Book book = bookDao.create(book1);
+        final Book book = setBookDao().create(book1);
 
-        try (final CloseableHttpResponse response = httpClient.execute(new HttpGet(address +
+        try (final CloseableHttpResponse response = getHttpServer().execute(new HttpGet(getAddress() +
                 "/books/" + book.getId()))) {
 
             assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
@@ -136,42 +101,44 @@ public class BookIntegrationTest {
     @Test
     void checkPost() throws IOException {
 
-        try (final CloseableHttpResponse response = httpClient.execute(new HttpPost(address +
+        try (final CloseableHttpResponse response = getHttpServer().execute(new HttpPost(getAddress() +
                 "/books/?id=222&title=DiscWorld&authorId="+book1.getAuthor().getId()))) {
 
             assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
 
             String body = bodyAsString(response.getEntity());
 
-            Book book = bookDao.fullList().get(0);
-            //assertThat(body, equalTo("created book:\n" +
-            //     "Book(id=" + book.getId() + ", title=DiscWorld, " +
-            //     "author=Author(id="+book.getAuthor().getId()+", firstName=Terry, lastName=Pratchett, dateOfBirth=1948-04-28)\n"));
+            Book book = setBookDao().fullList().get(0);
+            /*assertThat(body, equalTo("created book:\n" +
+                 "Book(id=" + book.getId() + ", title=DiscWorld, " +
+                 "author=Author(id="+book.getAuthor().getId()+", firstName=Terry, lastName=Pratchett, dateOfBirth=1948-04-28)\n"));*/
         }
     }
 
     @Test
     void checkPut() throws IOException {
-        final Book book = bookDao.create(book1);
 
-        try (final CloseableHttpResponse response = httpClient.execute(new HttpPut(address +
+        final Book book = setBookDao().create(book1);
+
+        try (final CloseableHttpResponse response = getHttpServer().execute(new HttpPut(getAddress() +
                 "/books/?id=" + book.getId() + "&title=Strata&authorId="+book1.getAuthor().getId()))) {
 
             assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
 
             String body = bodyAsString(response.getEntity());
 
-            //assertThat(body, equalTo("updated book:\n" +
-            //     "Book(id=" + book.getId() + ", title=Strata, " +
-            //     "author=Author(id="+book.getAuthor().getId()+", firstName=Terry, lastName=Pratchett, dateOfBirth=1948-04-28))\n"));
+            /*assertThat(body, equalTo("updated book:\n" +
+                 "Book(id=" + book.getId() + ", title=Strata, " +
+                 "author=Author(id="+book.getAuthor().getId()+", firstName=Terry, lastName=Pratchett, dateOfBirth=1948-04-28))\n"));*/
         }
     }
 
     @Test
     void checkDelete() throws IOException {
-        final Book book = bookDao.create(book1);
 
-        try (final CloseableHttpResponse response = httpClient.execute(new HttpDelete(address +
+        final Book book = setBookDao().create(book1);
+
+        try (final CloseableHttpResponse response = getHttpServer().execute(new HttpDelete(getAddress() +
                 "/books/" + book.getId()))) {
 
             assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));

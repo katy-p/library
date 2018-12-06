@@ -2,6 +2,7 @@ package katy.library.intergation;
 
 import com.sun.net.httpserver.HttpServer;
 import katy.library.controllers.sun.PersonHttpHandler;
+import katy.library.dao.AuthorDao;
 import katy.library.dao.PersonDao;
 import katy.library.dao.map.PersonMapDao;
 import katy.library.model.Person;
@@ -25,12 +26,8 @@ import java.time.Month;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class PersonIntegrationTest {
+abstract class PersonIntegrationTestTemplate {
 
-    private static HttpServer httpServer;
-    private static String address;
-    private static CloseableHttpClient httpClient;
-    private static PersonDao personDao;
 
     private Person person1 = Person.builder()
             .id(1)
@@ -39,39 +36,16 @@ public class PersonIntegrationTest {
             .dateOfBirth(LocalDate.of(1980, Month.APRIL,28))
             .build();
 
-    @BeforeAll
-    public static void init() throws IOException {
+    protected abstract String getAddress();
 
-        httpClient = HttpClientBuilder.create().build();
-        httpServer = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+    protected abstract CloseableHttpClient getHttpClient();
 
-        personDao = new PersonMapDao();
-
-        final PersonHttpHandler handler = new PersonHttpHandler(new PersonServise(personDao));
-
-        httpServer.createContext(handler.path(), handler);
-
-        httpServer.start();
-
-        address = "http:/" + httpServer.getAddress();
-    }
-
-    @AfterAll
-    public static void teardown() throws IOException {
-        httpClient.close();
-        httpServer.stop(0);
-    }
-
-    @BeforeEach
-    void cleanData() {
-
-        personDao.fullList().forEach(a -> personDao.delete(a.getId()));
-    }
+    protected abstract PersonDao getPersonDao();
 
     @Test
     void checkEmptyResponse() throws IOException {
 
-        try (final CloseableHttpResponse response = httpClient.execute(new HttpGet(address + "/persons/"))) {
+        try (final CloseableHttpResponse response = getHttpClient().execute(new HttpGet(getAddress() + "/persons/"))) {
 
             assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
 
@@ -84,9 +58,9 @@ public class PersonIntegrationTest {
     @Test
     public void checkGet() throws IOException {
 
-        final Person person = personDao.create(person1);
+        final Person person = getPersonDao().create(person1);
 
-        try(final CloseableHttpResponse response = httpClient.execute(new HttpGet(address +
+        try(final CloseableHttpResponse response = getHttpClient().execute(new HttpGet(getAddress() +
                 "/persons/"+person.getId()))) {
 
             assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
@@ -100,7 +74,8 @@ public class PersonIntegrationTest {
 
     @Test
     void checkPost() throws IOException {
-        try (final CloseableHttpResponse response = httpClient.execute(new HttpPost(address +
+
+        try (final CloseableHttpResponse response = getHttpClient().execute(new HttpPost(getAddress() +
                 "/persons/?id=222&firstName=Anna&lastName=Smith&dateOfBirth=1980-04-28"))) {
 
             assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
@@ -108,15 +83,16 @@ public class PersonIntegrationTest {
             String body = bodyAsString(response.getEntity());
 
             assertThat(body, equalTo("created person:\n" +
-                    "Person(id=" + personDao.fullList().get(0).getId() + ", firstName=Anna, lastName=Smith, dateOfBirth=1980-04-28)\n"));
+                    "Person(id=" + getPersonDao().fullList().get(0).getId() + ", firstName=Anna, lastName=Smith, dateOfBirth=1980-04-28)\n"));
         }
     }
 
     @Test
     void checkPut() throws IOException {
-        final Person person = personDao.create(person1);
 
-        try (final CloseableHttpResponse response = httpClient.execute(new HttpPut(address +
+        final Person person = getPersonDao().create(person1);
+
+        try (final CloseableHttpResponse response = getHttpClient().execute(new HttpPut(getAddress() +
                 "/persons/?id=" + person.getId() + "&firstName=Liza&lastName=Brown&dateOfBirth=1975-10-06"))) {
 
             assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
@@ -130,9 +106,10 @@ public class PersonIntegrationTest {
 
     @Test
     void checkDelete() throws IOException {
-        final Person person = personDao.create(person1);
 
-        try (final CloseableHttpResponse response = httpClient.execute(new HttpDelete(address +
+        final Person person = getPersonDao().create(person1);
+
+        try (final CloseableHttpResponse response = getHttpClient().execute(new HttpDelete(getAddress() +
                 "/persons/"+person.getId()))) {
 
             assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));

@@ -1,22 +1,21 @@
 package katy.library.controllers.sun;
 
+import katy.library.exception.ResourceNotFoundException;
 import katy.library.model.Author;
-import katy.library.model.Person;
 import katy.library.service.AuthorService;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URLDecoder;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.OptionalLong;
 import java.util.StringJoiner;
 
 public class AuthorsHttpHandler extends AbstractHttpHandler {
 
-    private  final AuthorService authorService;
+    private final AuthorService authorService;
 
     public AuthorsHttpHandler(AuthorService authorService) {
 
@@ -28,15 +27,9 @@ public class AuthorsHttpHandler extends AbstractHttpHandler {
         return "/authors/";
     }
 
-    private Author parseAuthor(String query){
+    private Author parseAuthor(URI requestURI) {
 
-        Map<String, String> queryParams = new HashMap<>();
-
-        for (String q : query.split("&")) {
-            String[] qa = q.split("=");
-
-            queryParams.put(URLDecoder.decode(qa[0]), (qa.length == 2) ? URLDecoder.decode(qa[1]) : "");
-        }
+        Map<String, String> queryParams = getParameters(requestURI);
 
         final LocalDate dateOfBirth = LocalDate.parse(queryParams.get("dateOfBirth"), DateTimeFormatter.ISO_LOCAL_DATE);
 
@@ -48,20 +41,13 @@ public class AuthorsHttpHandler extends AbstractHttpHandler {
                 .build();
     }
 
-    private OptionalLong getAuthorId(String path){
-
-        String[] params = path.split("/");
-
-        return (params.length == 3) ? OptionalLong.of(Long.parseLong(params[params.length - 1])) : OptionalLong.empty();
-    }
-
     @Override
     protected String onPost(URI requestURI, InputStream requestBody) {
 
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("created author:");
 
-        returnString.add(authorService.createAuthor(parseAuthor(requestURI.getQuery())).toString());
+        returnString.add(authorService.createAuthor(parseAuthor(requestURI)).toString());
 
         return returnString.toString();
     }
@@ -72,7 +58,7 @@ public class AuthorsHttpHandler extends AbstractHttpHandler {
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("updated author:");
 
-        returnString.add(authorService.updateAuthor(parseAuthor(requestURI.getQuery())).toString());
+        returnString.add(authorService.updateAuthor(parseAuthor(requestURI)).toString());
 
         return returnString.toString();
     }
@@ -83,7 +69,7 @@ public class AuthorsHttpHandler extends AbstractHttpHandler {
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("deleted author:");
 
-        final long id = getAuthorId(requestURI.getPath()).orElseThrow(() -> new RuntimeException("Invalid path"));
+        final long id = getId(requestURI).orElseThrow(() -> new ResourceNotFoundException("Can't delete author without id."));
         returnString.add(authorService.deleteAuthor(id).toString());
 
         return returnString.toString();
@@ -95,8 +81,18 @@ public class AuthorsHttpHandler extends AbstractHttpHandler {
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("author list:");
 
-        final long id = getAuthorId(requestURI.getPath()).orElseThrow(() -> new RuntimeException("Invalid path"));
-        returnString.add(authorService.getByIdAuthor(id).toString());
+        final OptionalLong id = getId(requestURI);
+
+        if (id.isPresent()) {
+            returnString.add(authorService.getByIdAuthor(id.getAsLong()).toString());
+
+        } else {
+            final List<Author> authorList = authorService.fullListOfAuthors();
+
+            for (Author author : authorList) {
+                returnString.add(author.toString());
+            }
+        }
 
         return returnString.toString();
     }

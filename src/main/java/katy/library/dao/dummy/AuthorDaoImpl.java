@@ -2,7 +2,6 @@ package katy.library.dao.dummy;
 
 import katy.library.dao.AuthorDao;
 import katy.library.model.Author;
-import katy.library.model.Book;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -23,7 +22,7 @@ public class AuthorDaoImpl implements AuthorDao {
 
     @Override
     public Optional<Author> getById(long id) {
-        if (id ==1) {
+        if (id == 1) {
             return Optional.of(author1);
         } else {
             return Optional.empty();
@@ -53,7 +52,7 @@ public class AuthorDaoImpl implements AuthorDao {
     @Override
     public Optional<Author> delete(long id) {
 
-        if (id ==1) {
+        if (id == 1) {
             return Optional.of(author1);
         } else {
             return Optional.empty();
@@ -68,6 +67,16 @@ public class AuthorDaoImpl implements AuthorDao {
         if ("Smith".equals(lastName)) {
             authorList.add(author1);
         }
+
+        return authorList;
+    }
+
+    @Override
+    public List<Author> fullList() {
+
+        List<Author> authorList = new ArrayList<>();
+
+        authorList.add(author1);
 
         return authorList;
     }

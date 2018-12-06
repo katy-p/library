@@ -15,6 +15,7 @@ public class AuthorService {
     private AuthorDao dao;
 
     public AuthorService(AuthorDao dao) {
+
         this.dao = dao;
     }
 
@@ -62,4 +63,11 @@ public class AuthorService {
 
         return dao.findByName(lastName);
     }
+
+    public List<Author> fullListOfAuthors(){
+
+        return dao.fullList();
+    }
+
+
 }
