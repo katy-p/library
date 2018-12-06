@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.StringJoiner;
 
 public class BooksHttpHandler extends AbstractHttpHandler {
@@ -18,15 +19,17 @@ public class BooksHttpHandler extends AbstractHttpHandler {
     private final BookService bookService;
 
     public BooksHttpHandler(BookService bookService) {
+
         this.bookService = bookService;
     }
 
     @Override
     public String path() {
+
         return "/books/";
     }
 
-    private Book getBook(String query){
+    private Book parseBook(String query){
 
         Map<String, String> queryParams = new HashMap<>();
 
@@ -45,22 +48,34 @@ public class BooksHttpHandler extends AbstractHttpHandler {
                 .build();
     }
 
-    private long getBookId(String path){
+    private OptionalLong getBookId(String path){
 
         String[] params = path.split("/");
 
-        return (params.length == 3) ? Long.parseLong(params[params.length - 1]) : 0;
+        return (params.length == 3) ? OptionalLong.of(Long.parseLong(params[params.length - 1])) : OptionalLong.empty();
     }
 
 
     @Override
     protected String onPost(URI requestURI, InputStream requestBody) {
-        throw new RuntimeException("Unsupported method: POST");
+
+        final StringJoiner returnString = new StringJoiner("\n");
+        returnString.add("created book:");
+
+        returnString.add(bookService.createBook(parseBook(requestURI.getQuery())).toString());
+
+        return returnString.toString();
     }
 
     @Override
     protected String onPut(URI requestURI, InputStream requestBody) {
-        throw new RuntimeException("Unsupported method: PUT");
+
+        final StringJoiner returnString = new StringJoiner("\n");
+        returnString.add("updated book");
+
+        returnString.add(bookService.updateBook(parseBook(requestURI.getQuery())).toString());
+
+        return returnString.toString();
     }
 
     @Override
@@ -69,7 +84,8 @@ public class BooksHttpHandler extends AbstractHttpHandler {
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("deleted book:");
 
-        returnString.add(bookService.deleteBook(getBookId(requestURI.getPath())).toString());
+        final long bookId = getBookId(requestURI.getPath()).orElseThrow(() -> new RuntimeException("Invalid path"));
+        returnString.add(bookService.deleteBook(bookId).toString());
 
         return returnString.toString();
     }
@@ -80,7 +96,8 @@ public class BooksHttpHandler extends AbstractHttpHandler {
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("book list:");
 
-        returnString.add(bookService.getByIdBook(getBookId(requestURI.getPath())).toString());
+        final long bookId = getBookId(requestURI.getPath()).orElseThrow(() -> new RuntimeException("Invalid path"));
+        returnString.add(bookService.getByIdBook(bookId).toString());
 
         return returnString.toString();
     }

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.StringJoiner;
 
 public class PersonHttpHandler extends AbstractHttpHandler{
@@ -45,11 +46,11 @@ public class PersonHttpHandler extends AbstractHttpHandler{
                 .build();
     }
 
-    private long getPersonId(String path){
+    private OptionalLong getPersonId(String path){
 
         String[] params = path.split("/");
 
-        return (params.length == 3) ? Long.parseLong(params[params.length - 1]) : 0;
+        return (params.length == 3) ? OptionalLong.of(Long.parseLong(params[params.length - 1])) : OptionalLong.empty();
     }
 
     @Override
@@ -80,7 +81,8 @@ public class PersonHttpHandler extends AbstractHttpHandler{
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("deleted person:");
 
-        returnString.add(personService.deletePerson(getPersonId(requestURI.getPath())).toString());
+        final long id = getPersonId(requestURI.getPath()).orElseThrow(() -> new RuntimeException("Invalid path"));
+        returnString.add(personService.deletePerson(id).toString());
 
         return returnString.toString();
     }
@@ -91,7 +93,8 @@ public class PersonHttpHandler extends AbstractHttpHandler{
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("person list:");
 
-        returnString.add(personService.getByIdPerson(getPersonId(requestURI.getPath())).toString());
+        final long id = getPersonId(requestURI.getPath()).orElseThrow(() -> new RuntimeException("Invalid path"));
+        returnString.add(personService.getByIdPerson(id).toString());
 
         return returnString.toString();
     }

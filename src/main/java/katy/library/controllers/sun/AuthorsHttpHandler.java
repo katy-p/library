@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.StringJoiner;
 
 public class AuthorsHttpHandler extends AbstractHttpHandler {
@@ -27,7 +28,7 @@ public class AuthorsHttpHandler extends AbstractHttpHandler {
         return "/authors/";
     }
 
-    private Author getAuthor(String query){
+    private Author parseAuthor(String query){
 
         Map<String, String> queryParams = new HashMap<>();
 
@@ -47,11 +48,11 @@ public class AuthorsHttpHandler extends AbstractHttpHandler {
                 .build();
     }
 
-    private long getAuthorId(String path){
+    private OptionalLong getAuthorId(String path){
 
         String[] params = path.split("/");
 
-        return (params.length == 3) ? Long.parseLong(params[params.length - 1]) : 0;
+        return (params.length == 3) ? OptionalLong.of(Long.parseLong(params[params.length - 1])) : OptionalLong.empty();
     }
 
     @Override
@@ -60,7 +61,7 @@ public class AuthorsHttpHandler extends AbstractHttpHandler {
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("created author:");
 
-        returnString.add(authorService.createAuthor(getAuthor(requestURI.getQuery())).toString());
+        returnString.add(authorService.createAuthor(parseAuthor(requestURI.getQuery())).toString());
 
         return returnString.toString();
     }
@@ -71,7 +72,7 @@ public class AuthorsHttpHandler extends AbstractHttpHandler {
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("updated author:");
 
-        returnString.add(authorService.updateAuthor(getAuthor(requestURI.getQuery())).toString());
+        returnString.add(authorService.updateAuthor(parseAuthor(requestURI.getQuery())).toString());
 
         return returnString.toString();
     }
@@ -82,7 +83,8 @@ public class AuthorsHttpHandler extends AbstractHttpHandler {
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("deleted author:");
 
-        returnString.add(authorService.deleteAuthor(getAuthorId(requestURI.getPath())).toString());
+        final long id = getAuthorId(requestURI.getPath()).orElseThrow(() -> new RuntimeException("Invalid path"));
+        returnString.add(authorService.deleteAuthor(id).toString());
 
         return returnString.toString();
     }
@@ -93,7 +95,8 @@ public class AuthorsHttpHandler extends AbstractHttpHandler {
         final StringJoiner returnString = new StringJoiner("\n");
         returnString.add("author list:");
 
-        returnString.add(authorService.getByIdAuthor(getAuthorId(requestURI.getPath())).toString());
+        final long id = getAuthorId(requestURI.getPath()).orElseThrow(() -> new RuntimeException("Invalid path"));
+        returnString.add(authorService.getByIdAuthor(id).toString());
 
         return returnString.toString();
     }
